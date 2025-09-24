@@ -28,5 +28,9 @@ export default defineConfig({
         ]
       }
     ],
+
+    socialLinks: [
+      { icon: 'github', link: 'https://github.com/sunaosa/front_node' }
+    ]
   }
 })
