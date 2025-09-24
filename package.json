@@ -5,9 +5,11 @@
   "scripts": {
     "docs:dev": "vitepress dev config",
     "docs:build": "vitepress build config",
-    "docs:preview": "vitepress preview config"
+    "docs:preview": "vitepress preview config",
+    "deploy-push": "npm run docs:build && gh-pages -d config/.vitepress/dist"
   },
   "dependencies": {
-    "ant-design-vue": "^4.2.6"
+    "ant-design-vue": "^4.2.6",
+    "gh-pages": "^6.3.0"
   }
 }

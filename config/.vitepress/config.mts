@@ -3,7 +3,7 @@ import { defineConfig } from 'vitepress'
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   srcDir: "..\\docs",
-  
+  base: "/front_node/",
   title: "十二个人博客",
   description: "十二前端个人总结",
   themeConfig: {
