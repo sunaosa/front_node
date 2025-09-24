@@ -5,7 +5,7 @@ layout: home
 hero:
   name: "十二个人博客"
   text: "十二前端个人总结"
-  tagline: My great project tagline
+  tagline: All tags
   actions:
     - theme: alt
       text: css
