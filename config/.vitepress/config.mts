@@ -1,4 +1,8 @@
 import { defineConfig } from 'vitepress'
+import {
+  containerPreview,
+  componentPreview,
+} from '@vitepress-demo-preview/plugin';
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -10,21 +14,21 @@ export default defineConfig({
     // https://vitepress.dev/reference/default-theme-config
     nav: [
       { text: 'Home', link: '/' },
-      { text: 'CSS Node', link: '/css/Animation' }
+      { text: 'CSS Node', link: '/css/Animation/Animation' }
     ],
 
     sidebar: [
       {
         text: 'CSS Node',
         items: [
-          { text: 'Animation', link: '/css/Animation' },
+          { text: 'Animation', link: '/css/Animation/Animation' },
           { 
             text: 'Layout', 
             items: [
               { text: 'Grid', link: '/css/Layout/Grid' },
               { text: 'Flex', link: '/css/Layout/Flex' },
             ]
-        },
+          },
         ]
       }
     ],
@@ -32,5 +36,18 @@ export default defineConfig({
     socialLinks: [
       { icon: 'github', link: 'https://github.com/sunaosa/front_node' }
     ]
+  },
+  markdown: {
+    config(md: any) {
+      md.use(containerPreview);
+      md.use(componentPreview);
+    },
+  },
+  vite: {
+    css: {
+      preprocessorOptions: {
+        scss: {}
+      }
+    }
   }
 })
