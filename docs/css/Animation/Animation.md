@@ -34,7 +34,7 @@
 | animation-delay | 动画延迟时间 | 时间值（s/ms），可为负值 | 0s | ❌ |
 | animation-iteration-count | 动画重复次数 | **数字**: 指定播放次数，小数时播放到指定比例<br>**infinite**: 无限循环 | 1 | ❌ |
 | animation-direction | 动画播放方向 | **normal**: 正常播放<br>**reverse**: 反向播放<br>**alternate**: 交替播放（正向→反向→正向...）<br>**alternate-reverse**: 反向交替播放（反向→正向→反向...） | normal | ❌ |
-| animation-fill-mode | 动画填充模式 | **none**: 执行前不改变元素样式，动画结束后元素回到初始状态<br>**forwards**: 保持动画结束时的状态<br>**backwards**: 在动画延迟期间，应用动画开始时的状态<br>**both**: 同时应用 forwards 和 backwards 的效果 | none | ❌ |
+| animation-fill-mode | 动画填充模式 | **none**: 执行前不改变元素样式，动画结束后元素回到初始状态<br>**forwards**: 保持动画结束时的状态<br>**backwards**: 执行前，应用第一帧样式<br>**both**: 同时应用 forwards 和 backwards 的效果 | none | ❌ |
 | animation-play-state | 动画播放状态 | **running**: 播放动画<br>**paused**: 暂停动画 | running | ❌ | 
 #### 使用
 <preview path="./components/cssAnimation.vue"></preview>
