@@ -53,3 +53,30 @@ coverage/
 # Temporary folders
 tmp/
 temp/
+
+# VitePress specific
+.vitepress/cache/
+.vitepress/dist/
+
+# Package manager lock files (optional - remove if you want to track them)
+# pnpm-lock.yaml
+# package-lock.json
+# yarn.lock
+
+# Editor directories and files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Cache directories
+.cache/
+.parcel-cache/
+.eslintcache
+
+# Build artifacts
+build/
+out/
