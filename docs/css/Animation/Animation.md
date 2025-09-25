@@ -30,7 +30,7 @@
 |------|------|--------|--------|------|
 | animation-name | 动画名称 | @keyframes定义的名称 | none | ✅ |
 | animation-duration | 动画持续时间 | 时间值（s/ms） | 0s | ✅ |
-| animation-timing-function | 动画时间函数 | **linear**: 匀速<br>**ease**: 慢速开始，然后变快，然后慢速结束<br>**ease-in**: 慢速开始<br>**ease-out**: 慢速结束<br>**ease-in-out**: 慢速开始和结束<br>**cubic-bezier(x1, y1, x2, y2)**: 自定义贝塞尔曲线 | ease | ❌ |
+| animation-timing-function | 动画时间函数 | **linear**: 匀速<br>**ease**: 慢速开始，然后变快，然后慢速结束(慢 -> 快 -> 慢)<br>**ease-in**: 慢速开始(慢 -> 快)<br>**ease-out**: 慢速结束(快 -> 慢)<br>**ease-in-out**: 慢速开始和结束(相对ease加速减速更平缓)<br>**cubic-bezier(x1, y1, x2, y2)**: 自定义贝塞尔曲线 | ease | ❌ |
 | animation-delay | 动画延迟时间 | 时间值（s/ms），可为负值 | 0s | ❌ |
 | animation-iteration-count | 动画重复次数 | **数字**: 指定播放次数，小数时播放到指定比例<br>**infinite**: 无限循环 | 1 | ❌ |
 | animation-direction | 动画播放方向 | **normal**: 正常播放<br>**reverse**: 反向播放<br>**alternate**: 交替播放（正向→反向→正向...）<br>**alternate-reverse**: 反向交替播放（反向→正向→反向...） | normal | ❌ |
