@@ -19,7 +19,7 @@ export default defineConfig({
 
     sidebar: [
       {
-        text: 'CSS Node',
+        text: 'CSS',
         items: [
           { text: 'Animation', link: '/css/Animation/Animation' },
           { 
@@ -29,6 +29,14 @@ export default defineConfig({
               { text: 'Flex', link: '/css/Layout/Flex' },
             ]
           },
+        ]
+      },
+      {
+        text: '绘图',
+        items: [
+          { text: 'Canvas', link: '/Canvas/canvas' },
+          { text: 'SVG', link: '/SVG/svg' },
+          { text: 'WebGL', link: '/WebGL/webgl' },
         ]
       }
     ],

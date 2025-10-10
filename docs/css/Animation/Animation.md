@@ -39,11 +39,92 @@
 #### 使用
 <preview path="./components/cssAnimation.vue"></preview>
 ### Transition(过度)
+**介绍：** CSS Transition（过渡）是一种CSS3特性，它允许CSS属性值在指定的持续时间内平滑地从一个值变化到另一个值，创造出流畅的动画效果。
+
+#### 实现
+```css
+.element {
+  transition: property duration timing-function delay;
+}
+
+/* 或者分别设置 */
+.element {
+  transition-property: property;
+  transition-duration: duration;
+  transition-timing-function: timing-function;
+  transition-delay: delay;
+}
+```
+
+| 属性 | 描述 | 可选值 | 默认值 | 必选 |
+|------|------|--------|--------|------|
+| transition-property | 指定过渡的CSS属性 | **all**: 所有属性<br>**none**: 无属性<br>**specific**: 具体属性名（如width, height, color等） | all | ✅ |
+| transition-duration | 过渡持续时间 | 时间值（s/ms） | 0s | ✅ |
+| transition-timing-function | 过渡时间函数 | **linear**: 匀速<br>**ease**: 慢速开始，然后变快，然后慢速结束<br>**ease-in**: 慢速开始<br>**ease-out**: 慢速结束<br>**ease-in-out**: 慢速开始和结束<br>**cubic-bezier(x1, y1, x2, y2)**: 自定义贝塞尔曲线 | ease | ❌ |
+| transition-delay | 过渡延迟时间 | 时间值（s/ms），可为负值 | 0s | ❌ |
+
+#### 使用示例
+```css
+/* 基础用法 */
+.button {
+  background-color: #3498db;
+  transition: background-color 0.3s ease;
+}
+
+.button:hover {
+  background-color: #e74c3c;
+}
+
+/* 多属性过渡 */
+.box {
+  width: 100px;
+  height: 100px;
+  background-color: blue;
+  transition: width 0.3s ease, height 0.3s ease, background-color 0.5s linear;
+}
+
+.box:hover {
+  width: 200px;
+  height: 200px;
+  background-color: red;
+}
+
+/* 全部属性过渡 */
+.card {
+  transform: scale(1);
+  opacity: 1;
+  transition: all 0.3s ease-in-out;
+}
+
+.card:hover {
+  transform: scale(1.1);
+  opacity: 0.8;
+}
+```
+
+#### 注意事项
+- 只有数值型属性才能使用过渡效果（如：width, height, color, opacity等）
+- display属性不能使用过渡，可以使用visibility或opacity替代
+- 过渡需要触发条件（如:hover, :focus, 类名变化等）
+- 性能考虑：transform和opacity的过渡性能最好
+<preview path="./components/cssTransition.vue"></preview>
 
 ## JS动画 
+### 概念
+在浏览器中，由浏览器渲染引擎或脚本代码驱动，以每秒60帧的速度通过不断改变页面元素的视觉属性（如位置、大小、颜色、透明度等），使页面呈现出随时间变化的动态效果的过程。
+
+`js动画`即通过js结合定时器或者requestAnimationFrame来实现在每帧切换元素的位置形态等。
+### 为什么需要Js动画
+css动画可以满足大部分场景，但对于更复杂的场景时，需要更灵活的控制，此时可以通过特定算法自定义所需要动画。
+### 案例
+<preview path="./components/jsAnimation.vue"></preview>
 
 ## SVG动画
-
+### 概念
+使用svg 实现动画效果，详见: [SVG](../../SVG/svg.md)
 ## Canvas动画
-
+### 概念
+使用canvas实现动画效果，详见[Canvas](../../Canvas/canvas.md)
 ## WebGL动画
+### 概念
+使用WebGl实现动画效果，详见[WebGL](../../WebGL/webgl.md)
