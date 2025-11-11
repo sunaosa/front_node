@@ -1,0 +1,1 @@
+import{_ as e,c as t,o as a}from"./chunks/framework.BEa_xUtC.js";const i=JSON.parse('{"title":"","description":"","frontmatter":{},"headers":[],"relativePath":"WebGL/webgl.md","filePath":"WebGL/webgl.md"}'),r={name:"WebGL/webgl.md"};function o(s,c,n,l,p,_){return a(),t("div")}const m=e(r,[["render",o]]);export{i as __pageData,m as default};
