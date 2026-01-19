@@ -16,7 +16,7 @@ export default defineConfig({
       { text: 'Home', link: '/' },
       { text: 'CSS Node', link: '/css/Animation/Animation' },
       {  text: '绘图', link: '/Canvas/canvas' },
-      { text: '框架', link: '/React/React' },
+      { text: '框架', link: '/React/react' },
     ],
 
     sidebar: [
