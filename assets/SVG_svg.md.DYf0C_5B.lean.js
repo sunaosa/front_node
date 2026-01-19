@@ -1,1 +1,0 @@
-import{_ as e,c as t,o as a}from"./chunks/framework.BEa_xUtC.js";const m=JSON.parse('{"title":"","description":"","frontmatter":{},"headers":[],"relativePath":"SVG/svg.md","filePath":"SVG/svg.md"}'),s={name:"SVG/svg.md"};function r(o,c,n,p,_,d){return a(),t("div")}const f=e(s,[["render",r]]);export{m as __pageData,f as default};

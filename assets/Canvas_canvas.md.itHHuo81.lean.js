@@ -1,1 +1,0 @@
-import{_ as a,c as e,o as t}from"./chunks/framework.BEa_xUtC.js";const m=JSON.parse('{"title":"","description":"","frontmatter":{},"headers":[],"relativePath":"Canvas/canvas.md","filePath":"Canvas/canvas.md"}'),s={name:"Canvas/canvas.md"};function n(c,r,o,p,_,d){return t(),e("div")}const v=a(s,[["render",n]]);export{m as __pageData,v as default};
