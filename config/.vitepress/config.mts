@@ -14,7 +14,9 @@ export default defineConfig({
     // https://vitepress.dev/reference/default-theme-config
     nav: [
       { text: 'Home', link: '/' },
-      { text: 'CSS Node', link: '/css/Animation/Animation' }
+      { text: 'CSS Node', link: '/css/Animation/Animation' },
+      {  text: '绘图', link: '/Canvas/canvas' },
+      { text: '框架', link: '/React/React' },
     ],
 
     sidebar: [
@@ -37,6 +39,12 @@ export default defineConfig({
           { text: 'Canvas', link: '/Canvas/canvas' },
           { text: 'SVG', link: '/SVG/svg' },
           { text: 'WebGL', link: '/WebGL/webgl' },
+        ]
+      },
+      {
+        text: '框架',
+        items: [
+          { text: 'React', link: '/React/react' },
         ]
       }
     ],
