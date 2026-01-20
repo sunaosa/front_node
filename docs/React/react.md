@@ -21,7 +21,7 @@ React.createElement(MyComponent, {
 
 ### useState的批量更新机制
 
-在React中以下情况中，会将所有的setState收集放入对列。待所有收集完毕时，一次性执行，每个对列只会导致函数组件重新渲染一次。
+在React中以下情况中，会将所有的setState收集放入各自hook的对列。待所有收集完毕时，一次性执行，一批只会导致函数组件重新渲染一次。**以下情况下会进行批处理：**
 
 | 场景                      | React 17   | React 18 (createRoot) | 说明             |
 | ------------------------- | ---------- | --------------------- | ---------------- |
@@ -86,4 +86,37 @@ function handleClick() {
   // 渲染后变为true
 }
 ```
+
+### useState在filber中的执行
+
+在react中每个函数组件都有一个完整的fiber。并且由fiber.memoizedState作为链表的头根据hook创建顺序形成一个链表。
+
+每个hook  都有一个执行队列quene，next(指向下一个hook)，memoizedState（当前状态）
+
+如下：
+
+```js
+fiber.memoizedState -> hook1 -> hook2 -> ...
+
+
+// 基本代码实现
+function Hook(initial) {
+    this.memoizedState = initial;   // 当前 state 值（useState 返回的值）
+    this.queue = { pending: null }; // 更新循环链表（setState 入队）
+    this.next = null;               // 指向下一个 hook
+}
+
+const firstHook = new Hook(0);
+const secondHook = new Hook('A');
+firstHook.next = secondHook;
+
+const fiber = { memoizedState: firstHook }; // fiber.memoizedState -> firstHook
+
+console.log(fiber.memoizedState.memoizedState); // 0
+console.log(fiber.memoizedState.next.memoizedState); // 'A'
+```
+
+所以当setState时实际上是，update加入对列，触发重新render，render时根据fiber重新将每个hook的对列清空。
+
+*【解释问题】n遍setCount(count + 1)  最后只加了1是因为，只是做了收集，实际传进去的都是尝试 count + 1。*
 
