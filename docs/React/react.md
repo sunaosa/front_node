@@ -2,9 +2,9 @@
 
 ## JSX和JS区别
 
-jsx是由facebook提出的规范，允许在js中使用html的标记。
+JSX是由Facebook提出的规范，允许在JS中使用HTML的标记。
 
-支持在不限于React中使用。通过babel可转换成js语法。
+不限于在React中使用，通过Babel可转换成JS语法。
 
 ```js
 // JSX - 自定义组件
@@ -15,13 +15,25 @@ React.createElement(MyComponent, {
   name: 'Alice',
   age: 25
 })
+
+// JSX Fragment - 避免额外的DOM节点
+<>
+  <div>Item 1</div>
+  <div>Item 2</div>
+</>
+
+// 转换为
+React.createElement(React.Fragment, null,
+  React.createElement('div', null, 'Item 1'),
+  React.createElement('div', null, 'Item 2')
+)
 ```
 
 ## useState
 
 ### useState的批量更新机制
 
-在React中以下情况中，会将所有的setState收集放入各自hook的对列。待所有收集完毕时，一次性执行，一批只会导致函数组件重新渲染一次。**以下情况下会进行批处理：**
+在React中，以下情况会将所有的setState收集放入各自hook的队列。待所有收集完毕时，一次性执行，一批更新只会导致函数组件重新渲染一次。**以下情况下会进行批处理：**
 
 | 场景                      | React 17   | React 18 (createRoot) | 说明             |
 | ------------------------- | ---------- | --------------------- | ---------------- |
@@ -34,7 +46,23 @@ React.createElement(MyComponent, {
 | **requestAnimationFrame** | ❌ 不批量   | ✅ 批量                | 动画帧           |
 | **flushSync 包裹**        | ❌ 强制同步 | ❌ 强制同步            | 立即更新         |
 
-【注】除以上会导致多次渲染外，StrictMode 也会导致渲染两边，项目中需做判断，该标签作用。
+**React 17 中的手动批处理：**
+
+在React 17中，如果需要在异步代码中实现批处理，可以使用`unstable_batchedUpdates`：
+
+```js
+import { unstable_batchedUpdates } from 'react-dom';
+
+setTimeout(() => {
+  unstable_batchedUpdates(() => {
+    setCount(c => c + 1);
+    setFlag(f => !f);
+    // 这两个更新会被批处理，只触发一次渲染
+  });
+}, 1000);
+```
+
+【注】除以上批处理情况外，StrictMode 也会导致渲染两次，这是该标签在开发环境中的预期行为。
 
 | ✅ 发现不纯的组件      | ❌ console.log 输出两次 |
 | --------------------- | ---------------------- |
@@ -45,7 +73,7 @@ React.createElement(MyComponent, {
 
 ### 函数式更新 vs 直接更新
 
-在React中由于批量更新原因，定义的字段是个闭包的字段一次渲染中永远读取的是当前渲染的值，一般等到下一次渲染时才会更新对应值。
+在React中由于批量更新机制，state变量在一次渲染中是闭包捕获的值，永远读取的是当前渲染时的快照值，只有在下一次渲染时才会更新为新值。
 
 一般情况下：
 
@@ -87,11 +115,15 @@ function handleClick() {
 }
 ```
 
-### useState在filber中的执行
+### useState在Fiber中的执行
 
-在react中每个函数组件都有一个完整的fiber。并且由fiber.memoizedState作为链表的头根据hook创建顺序形成一个链表。
+在React中，每个函数组件都有一个完整的Fiber节点。Fiber通过fiber.memoizedState作为链表的头节点，根据hook创建顺序形成一个单向链表。
 
-每个hook  都有一个执行队列quene，next(指向下一个hook)，memoizedState（当前状态）
+每个hook都有以下属性：
+
+- `queue`：执行队列
+- `next`：指向下一个hook
+- `memoizedState`：当前状态值
 
 如下：
 
@@ -116,7 +148,33 @@ console.log(fiber.memoizedState.memoizedState); // 0
 console.log(fiber.memoizedState.next.memoizedState); // 'A'
 ```
 
-所以当setState时实际上是，update加入对列，触发重新render，render时根据fiber重新将每个hook的对列清空。
+所以当调用setState时，实际流程是：update加入队列 → 触发重新render → render时根据fiber依次处理每个hook的队列并清空。
 
-*【解释问题】n遍setCount(count + 1)  最后只加了1是因为，只是做了收集，实际传进去的都是尝试 count + 1。*
+**为什么不能在条件语句中使用Hook？**
+
+由于Hook是通过链表顺序来维护状态的，React依赖Hook的调用顺序来正确匹配state。如果在条件语句中使用Hook，会破坏链表结构：
+
+```js
+// ❌ 错误示例
+function Component({ condition }) {
+  if (condition) {
+    const [count, setCount] = useState(0); // 条件性调用会破坏顺序
+  }
+  const [name, setName] = useState(''); // 链表位置不固定
+}
+
+// ✅ 正确示例
+function Component({ condition }) {
+  const [count, setCount] = useState(0); // 始终调用
+  const [name, setName] = useState('');  // 顺序固定
+  
+  if (condition) {
+    // 可以在这里使用count
+  }
+}
+```
+
+这就是React的两大Hook规则之一：**只在函数组件顶层调用Hook，不要在循环、条件或嵌套函数中调用。**
+
+*【注意】为什么多次调用`setCount(count + 1)`最后只加了1？因为批处理只是收集更新操作，每次传入的都是同一个闭包中的count值（如0），所以实际都是`setCount(0 + 1)`，最终结果为1。要实现累加，应使用函数式更新`setCount(prev => prev + 1)`。*
 
