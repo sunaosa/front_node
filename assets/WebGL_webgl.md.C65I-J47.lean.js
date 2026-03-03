@@ -1,0 +1,1 @@
+import{_ as e,o as t,c as a}from"./chunks/framework.DaXVObk1.js";const i=JSON.parse('{"title":"","description":"","frontmatter":{},"headers":[],"relativePath":"WebGL/webgl.md","filePath":"WebGL/webgl.md"}'),r={name:"WebGL/webgl.md"};function o(s,c,n,l,p,_){return t(),a("div")}const m=e(r,[["render",o]]);export{i as __pageData,m as default};
