@@ -1,18 +1,22 @@
 {
   "devDependencies": {
+    "concurrently": "^9.1.2",
     "vitepress": "2.0.0-alpha.12"
   },
   "scripts": {
-    "docs:dev": "vitepress dev config",
+    "docs:dev": "concurrently \"pnpm -F react_demo dev\" \"vitepress dev config\"",
     "docs:build": "vitepress build config",
     "docs:preview": "vitepress preview config",
     "deploy-push": "npm run docs:build && gh-pages -d config/.vitepress/dist"
   },
   "dependencies": {
+    "@types/node": "^25.3.3",
     "@vitepress-demo-preview/component": "^2.5.2",
     "@vitepress-demo-preview/plugin": "^1.4.1",
     "ant-design-vue": "^4.2.6",
+    "antd": "^6.3.1",
     "gh-pages": "^6.3.0",
+    "react-router-dom": "^7.13.1",
     "sass": "^1.93.2"
   },
   "packageManager": "pnpm@10.25.0+sha512.5e82639027af37cf832061bcc6d639c219634488e0f2baebe785028a793de7b525ffcd3f7ff574f5e9860654e098fe852ba8ac5dd5cefe1767d23a020a92f501"

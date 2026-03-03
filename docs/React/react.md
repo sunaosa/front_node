@@ -178,3 +178,73 @@ function Component({ condition }) {
 
 *【注意】为什么多次调用`setCount(count + 1)`最后只加了1？因为批处理只是收集更新操作，每次传入的都是同一个闭包中的count值（如0），所以实际都是`setCount(0 + 1)`，最终结果为1。要实现累加，应使用函数式更新`setCount(prev => prev + 1)`。*
 
+
+## useEffect
+`useEffect` 是 React 中用于处理**副作用（Side Effects）**的 Hook。
+
+在 React 中，主要的渲染任务是单纯地根据 `props` 和 `state` 计算并返回 UI。而那些与 UI 渲染无关的额外操作（例如：发起网络请求、直接操作 DOM、设置定时器、订阅事件等）都被称为**副作用**。
+
+`useEffect` 允许我们在组件**渲染完成并将 DOM 变动绘制到屏幕之后**，去执行这些副作用操作，并允许在下次执行或组件卸载前运行“清理逻辑”。
+
+### 底层运行原理
+
+`useEffect` 的底层原理与 `useState` 类似，也依赖于 Fiber 节点的 Hook 链表。它在底层的工作流可以概括为以下四个关键机制：
+
+1. **链表存储与队列**：在 Fiber 节点中，每个 `useEffect` 也会占用一个 Hook 对象，保存在单向链表中。它的触发函数（create）、清理函数（destroy）和依赖项（deps）会被打包成一个 `effect` 对象，并挂载到 Fiber 节点的 `updateQueue`（副作用队列）中。
+2. **依赖比对（浅比较）**：在组件更新（重新渲染）时，React 会使用 `Object.is()` 遍历比较新旧依赖数组。如果所有依赖项都未改变，此次 Effect 虽然会被创建，但不会被打上“需要执行”的标记（Tag），从而在后续阶段被跳过。
+3. **异步执行时机**：React 将 `useEffect` 定义为**被动副作用（Passive Effect）**。它不会阻塞浏览器的绘制（Paint），而是在 React 的 Commit 阶段（DOM 已更新）结束后，通过异步任务（类似 `setTimeout` 或 `MessageChannel` 后台执行）调用。*(如果是需要同步阻塞浏览器绘制的更新，应使用 `useLayoutEffect`)*
+4. **清理函数的闭包性**：如果 effect 伴随一个返回的清理函数（cleanup），React 内部会保存对其引用。当下一次处理（由于依赖更新）或者组件卸载前，React 会**先执行上一次留下的清理函数**，再执行本次的副作用函数。
+
+### 使用
+1. 没有传依赖项（不写 deps）：
+这种情况下每次重新渲染都会触发 Effect，因此在每次执行新 Effect 之前，都会先执行上一次 render 留下的清理函数。
+2. 依赖项为空数组 []：
+重新渲染时绝对不会执行。它只会在组件彻底销毁（卸载）时，执行唯一的一次。
+3. 依赖项有特定的值（例如 [userId]）：
+只有当 userId 发生变化，导致 React 决定需要再次运行 Effect 时，才会先执行旧 userId 对应的清理函数。如果重新渲染是因为其他状态改变（userId 没变），Effect 不会执行，清理函数也就不会执行。
+
+### 伪代码
+```js
+// 模拟 Fiber 节点保存 Hooks 的状态
+let hookIndex = 0;   // 当前执行到的 hook 索引
+const hooks = [];    // 模拟 Fiber.memoizedState 链表/数组
+
+function useEffect(callback, deps) {
+  const currentIndex = hookIndex;
+  const currentHook = hooks[currentIndex];
+
+  // 1. 检查依赖是否发生变化
+  let hasChanged = true;
+  if (currentHook && currentHook.deps && deps) {
+    // 使用 Object.is 进行浅比较
+    hasChanged = !deps.every((dep, i) => Object.is(dep, currentHook.deps[i]));
+  }
+
+  // 2. 如果依赖改变，或没有传依赖，则需要执行副作用
+  if (hasChanged) {
+    // React 实际在 commit 阶段之后通过调度器异步执行副作用
+    // 这里使用 setTimeout 宏任务模拟异步、不阻塞渲染的特性
+    setTimeout(() => {
+      // 3. 执行前，如果存在上一次的 cleanup 函数，先执行清理
+      if (currentHook && currentHook.cleanup) {
+        currentHook.cleanup();
+      }
+
+      // 4. 执行当前的副作用回调，并获取可能返回的 cleanup 清理函数
+      const cleanup = callback();
+
+      // 5. 将最新的依赖和清理函数持久化到当前 hook 节点中
+      hooks[currentIndex] = {
+        deps: deps,
+        cleanup: typeof cleanup === 'function' ? cleanup : undefined
+      };
+    }, 0);
+  }
+
+  // 指针移动到下一个 Hook
+  hookIndex++;
+}
+
+// ============== 模拟组件执行过程 ==============
+// React 每次 render 前会重置索引： hookIndex = 0;
+```

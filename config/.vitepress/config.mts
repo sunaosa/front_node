@@ -45,6 +45,7 @@ export default defineConfig({
         text: '框架',
         items: [
           { text: 'React', link: '/React/react' },
+          { text: 'React Demo', link: '/React/react_demo' },
         ]
       }
     ],
