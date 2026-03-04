@@ -9,10 +9,13 @@ hero:
   actions:
     - theme: alt
       text: css
-      link: /docs/css/Animation/Animation
+      link: /css/Animation/Animation
 features:
   - title: CSS
     details: CSS 知识点总结
     link: /css/Animation/Animation
+  - title: React
+    details: React 知识点总结
+    link: /React/react
 ---
 

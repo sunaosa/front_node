@@ -199,9 +199,28 @@ function Component({ condition }) {
 1. 没有传依赖项（不写 deps）：
 这种情况下每次重新渲染都会触发 Effect，因此在每次执行新 Effect 之前，都会先执行上一次 render 留下的清理函数。
 2. 依赖项为空数组 []：
-重新渲染时绝对不会执行。它只会在组件彻底销毁（卸载）时，执行唯一的一次。
+Effect 函数本身只在组件挂载后执行一次。清理函数 (Cleanup) 只在组件卸载前执行一次。
 3. 依赖项有特定的值（例如 [userId]）：
 只有当 userId 发生变化，导致 React 决定需要再次运行 Effect 时，才会先执行旧 userId 对应的清理函数。如果重新渲染是因为其他状态改变（userId 没变），Effect 不会执行，清理函数也就不会执行。
+
+### 清理函数 (Cleanup function)
+清理函数不仅仅是在组件卸载时执行，**每次依赖项变化 -> 组件重新渲染 -> 执行上一次 Effect 的清理函数 -> 执行本次 Effect**。
+
+这在处理订阅、定时器或取消网络请求时非常关键：
+
+```js
+useEffect(() => {
+  const timer = setInterval(() => { console.log('Tick') }, 1000);
+  
+  // 必须返回清理函数
+  return () => clearInterval(timer); 
+}, [someDep]); // 每次 someDep 变化，都会先 clear 旧 timer，再开新 timer
+```
+
+### useEffect vs useLayoutEffect
+
+- **useEffect**: 渲染更新 DOM -> 浏览器绘制 -> **异步执行**副作用。（推荐，不阻塞用户看到界面）
+- **useLayoutEffect**: 渲染更新 DOM -> **同步执行**副作用 -> 浏览器绘制。（仅在需要测量 DOM 尺寸或避免画面闪烁时使用）
 
 ### 伪代码
 ```js
@@ -248,3 +267,169 @@ function useEffect(callback, deps) {
 // ============== 模拟组件执行过程 ==============
 // React 每次 render 前会重置索引： hookIndex = 0;
 ```
+
+### 依赖项陷阱 (useEffect 的常见坑)
+
+在开发中，副作用管理不当最容易导致 Bug。以下是两个经典的反面教材和对应的解决思路。
+
+#### 1. 闭包陷阱 (Stale Closure)
+如果你在 `useEffect` 或 `useCallback` 中使用了某个 state，但忘记把它加入依赖数组，就会导致函数内部一直读取到**组件初次渲染时的旧值**。
+
+```js
+// ❌ 错误示范：runSearch 依赖了 query 但没写依赖，导致内部永远读到 query=""
+const runSearch = useCallback(
+  debounce(() => {
+    console.log("Stale Closure Search:", query) 
+  }, 1000),
+  [] // ⚠️ 漏写依赖项 query
+);
+
+useEffect(() => {
+  if (query) runSearch(); // 虽然 query 变了触发 runSearch，但 runSearch 实际上是旧函数
+}, [query]);
+```
+
+#### 2. 函数重建导致的失效
+为了解决闭包问题，你把 `query` 加入了 `useCallback` 的依赖，结果导致防抖失效。原因在于**每次 query 变 -> runSearch 重新生成 -> debounce 内部状态重置**。
+
+```js
+// ❌ 错误示范：虽然没闭包问题，但每次输入都会创建全新的 debounce 函数，导致防抖失效
+const runSearch = useCallback(
+  debounce(() => {
+    console.log("Search:", query) 
+  }, 1000),
+  [query] // ⚠️ 虽然 query 变了应该更新，但这导致了函数实例更换
+);
+```
+
+#### ✅ 正确解法：事件驱动或 useRef
+
+**方案 A（推荐）：事件驱动**
+直接在 onChange 事件中处理逻辑，数据推入，不依赖 useEffect 监听。
+
+```js
+const debouncedSearch = useCallback(
+  debounce((nextVal) => { console.log(nextVal) }, 1000), 
+  [] // 永远不重建
+);
+
+const onChange = (e) => {
+  setQuery(e.target.value);
+  debouncedSearch(e.target.value); // 把最新值传进去
+}
+```
+
+**方案 B：useEffect 内部清理**
+不使用第三方 debounce，利用 useEffect 的 cleanup 特性。
+
+```js
+useEffect(() => {
+  const timer = setTimeout(() => {
+    console.log('Search:', query);
+  }, 1000);
+  
+  // 每次 query 变之前，清除上一次的定时器
+  return () => clearTimeout(timer);
+}, [query]);
+```
+
+## useCallback
+`useCallback` 是 React 提供的一个 Hook，**它的核心作用是“缓存函数引用”**。
+
+在 React 函数组件中，每次组件重新渲染（render）时，组件内部定义的函数（比如 `handleClick`）默认都会**重新创建**一个新的函数实例。
+
+### 为什么需要 useCallback？
+
+通常情况下，函数重新创建并非性能瓶颈（JS 创建函数非常快）。但是，当这个函数作为 props 传递给子组件时，问题就来了：
+
+1.  **导致不必要的子组件渲染**：如果子组件使用了 `React.memo` 进行优化（只在 props 变化时才重新渲染），但父组件每次传进去的 `onClick` 函数都是新的（引用变了），`React.memo` 就会认为 props 变了，从而导致子组件无意义地重新渲染。
+2.  **打破依赖链稳定性**：如果这个函数被用作 `useEffect` 的依赖项（`[func]`），函数变了会导致 Effect 频繁执行。
+
+### 核心语法
+
+```js
+const memoizedCallback = useCallback(
+  () => {
+    doSomething(a, b);
+  },
+  [a, b], // 依赖项数组
+);
+```
+
+*   **如果 `[a, b]` 没有变**：`useCallback` 会返回**上一次**在这个位置创建的那个函数引用。
+*   **如果 `[a, b]` 变了**：`useCallback` 会返回**新的**函数引用。
+
+## useMemo
+`useMemo` 用于缓存**计算结果**。
+
+### 核心区别对比
+
+| 特性 | **useCallback** | **useMemo** |
+| :--- | :--- | :--- |
+| **缓存对象** | **缓存函数本身** (Function Identity) | **缓存函数的返回值** (Calculated Value) |
+| **适用场景** | 防止函数地址变化导致子组件重渲染 | 防止昂贵的计算逻辑重复执行 |
+| **返回值** | `fn` (函数引用) | `result` (函数执行后的结果) |
+
+
+```js
+// useCallback (缓存动作)
+const handleClick = useCallback(() => { ... }, []);
+
+// useMemo (缓存结果)
+const expensiveValue = useMemo(() => {
+  return a * b + 100; 
+}, [a, b]);
+```
+
+### useMemo vs Vue computed
+`useMemo` 和 Vue 的 `computed` 非常相似，核心目的都是“缓存计算结果”。
+
+*   **Vue `computed`**：**自动追踪依赖**（响应式系统自动收集），是一种默认的最佳实践。
+*   **React `useMemo`**：**手动声明依赖**（需要写依赖数组 `[]`），只建议在昂贵计算或需要稳定引用时使用，不要滥用。
+
+## React 更新流程 (Fiber 架构)
+
+React 的更新流程（Reconciliation）主要分为两个阶段：**Render 阶段** 和 **Commit 阶段**。
+
+### 1. Render 阶段 (计算阶段)
+**目标**：计算出哪些组件需要更新，以及如何更新。
+- **纯净 (Pure)**：不进行任何 DOM 操作或副作用。
+- **可中断**：React 可能会因为高优先级任务（如用户输入）插队而暂停、废弃或重新开始这个阶段的任务。
+- **工作内容**：
+    1.  调用 `Function Component` 函数体（或 `Class.render`）。
+    2.  构造新的 Fiber 树（WorkInProgress Tree）。
+    3.  Diff 算法对比新旧 Fiber 节点（Reconcile）。
+    4.  标记 Effect Tag（增删改、Ref 变动等）。
+
+### 2. Commit 阶段 (提交阶段)
+**目标**：将 Render 阶段计算的结果应用到真实 DOM，并执行副作用。
+- **不可中断**：一旦开始，必须一口气执行完，否则页面 UI 会不一致。
+- **三个子阶段**：
+
+    **A. Before Mutation (变动前)**
+    - 处理 DOM 变动前的逻辑。
+    - 调用 `getSnapshotBeforeUpdate` (Class Component)。
+    - **注意：** 这里还看不到 DOM 变化。
+
+    **B. Mutation (变动中)**
+    - **真正操作 DOM**：React 执行 `appendChild`, `removeChild`, `setAttribute` 等操作。
+    - **Ref 更新**：这是解除旧 Ref、赋值新 Ref 的时机。
+    - **注意：** 此时 JS 内存中的 DOM 已经变了，但浏览器还没绘制（Paint）。
+
+    **C. Layout (布局/变动后)**
+    - **同步执行 `useLayoutEffect`** 的回调。
+    - **同步执行 `componentDidMount` / `componentDidUpdate`**。
+    - **Ref 最终确认**。
+    - **注意：** 这里是 JS 阻塞的最后一环，执行完后，JS 线程交还给浏览器，浏览器开始绘制 (Paint)。
+
+### 3. Passive Context (被动副作用)
+**目标**：执行那些不影响 UI 的副作用（异步）。
+- **时机**：浏览器 Paint 之后（通过 Scheduler 调度，通常是宏任务或微任务）。
+- **工作内容**：
+    - **执行 `useEffect` 的清理函数 (cleanup)**。
+    - **执行 `useEffect` 的回调 (create)**。
+    - 触发新的更新（如果在 Effect 里调用了 setState）。
+
+### 流程图解
+```text
+[触发更新] -> [Render阶段 (Diff)] -> [Commit: Mutation (改DOM)] -> [Commit: Layout (同步Effect)] -> [浏览器绘制 Paint] -> [Passive: useEffect]
