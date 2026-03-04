@@ -1,1 +1,0 @@
-import{_ as a,o as e,c as t}from"./chunks/framework.DaXVObk1.js";const m=JSON.parse('{"title":"","description":"","frontmatter":{},"headers":[],"relativePath":"Canvas/canvas.md","filePath":"Canvas/canvas.md"}'),s={name:"Canvas/canvas.md"};function n(c,r,o,p,_,d){return e(),t("div")}const v=a(s,[["render",n]]);export{m as __pageData,v as default};
