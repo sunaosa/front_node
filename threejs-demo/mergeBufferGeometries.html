@@ -1,17 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Three.js 性能对比：合并几何体 vs 独立渲染</title>
     <style>
-        body { margin: 0; overflow: hidden; }
-        #stats { position: absolute; top: 0px; left: 0; }
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #stats {
+            position: absolute;
+            top: 0px;
+            left: 0;
+        }
+
         #select {
             position: absolute;
             top: 0px;
-            left: 100px 
+            left: 100px
         }
+
         #button {
             position: absolute;
             top: 0px;
@@ -19,6 +30,7 @@
         }
     </style>
 </head>
+
 <body>
     <!-- stats.js 帧率面板 -->
     <div id="stats"></div>
@@ -59,13 +71,18 @@
         // 基础立方体几何体和材质
         const cubeSize = 0.1;
         const cubeGeometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
-        const cubeMaterial = new THREE.MeshBasicMaterial({ 
+        const cubeMaterial = new THREE.MeshBasicMaterial({
+            color: '#FF0000',
+            wireframe: true
+        });
+        const cubeInstancedMaterial = new THREE.MeshBasicMaterial({
+
         });
         // 生成n个立方体位置
         const gridSize = 100;
         const spacing = 0.1;
         const cubePositions = [];
-        const cubeInstanced =  new THREE.InstancedMesh(cubeGeometry, cubeMaterial, gridSize * gridSize * gridSize);
+        const cubeInstanced = new THREE.InstancedMesh(cubeGeometry, cubeInstancedMaterial, gridSize * gridSize * gridSize);
         for (let x = 0; x < gridSize; x++) {
             for (let y = 0; y < gridSize; y++) {
                 for (let z = 0; z < gridSize; z++) {
@@ -103,7 +120,14 @@
                 geom.translate(pos[0], pos[1], pos[2]);
                 return geom;
             });
+            console.log('几何体数量:', geometries.length);
+            console.log('第一个几何体顶点:', geometries[0]?.attributes?.position?.count);
+
             const mergedGeometry = THREE.BufferGeometryUtils.mergeBufferGeometries(geometries);
+
+            console.log('合并后顶点:', mergedGeometry?.attributes?.position?.count);
+            console.log('mergedGeometry:', mergedGeometry);
+            console.log('cubeMaterial:', cubeMaterial);
             const mergedMesh = new THREE.Mesh(mergedGeometry, cubeMaterial);
             scene.add(mergedMesh);
             renderer.render(scene, camera);
@@ -115,6 +139,7 @@
             const time = Date.now();
             const cube = new THREE.Matrix4();
             const color = new THREE.Color();
+
             cubePositions.forEach((pos, index) => {
                 cube.setPosition(pos[0], pos[1], pos[2]);
                 color.r = Math.random();
@@ -181,4 +206,5 @@
         console.log('current mode:', currentMode);
     </script>
 </body>
+
 </html>
