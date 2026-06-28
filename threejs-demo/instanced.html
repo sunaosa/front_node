@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js: InstancedBufferAttribute</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        #stats { position: absolute; top: 0px; left: 0; }
+        #select {
+            position: absolute;
+            top: 0px;
+            left: 100px 
+        }
+        #button {
+            position: absolute;
+            top: 0px;
+            left: 250px;
+        }
+    </style>
+</head>
+<body>
+    <!-- stats.js 帧率面板 -->
+    <div id="stats"></div>
+    <!-- Three.js 库 -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/utils/BufferGeometryUtils.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.min.js"></script>
+    <!-- stats.js 库 -->
+    <script src="https://cdn.jsdelivr.net/npm/stats.js@0.17.0/build/stats.min.js"></script>
+
+    <script>
+        const time1 = Date.now();
+        
+        // 初始化场景、相机、渲染器
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // 初始化 stats.js
+        const stats = new Stats();
+        stats.showPanel(0); // 0: FPS, 1: MS, 2: MB
+        document.getElementById('stats').appendChild(stats.dom);
+
+        // 添加轨道控制器
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+
+        // 基础立方体几何体和材质
+        const cubeSize = 0.1;
+        const cubeGeometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
+        // 7. 着色器材质（关键：简化矩阵计算）
+        const cubeMaterial = new THREE.ShaderMaterial({
+            vertexShader: `
+                attribute vec3 instancePosition;
+                attribute vec3 instanceColor;
+                varying vec3 vColor;
+
+                void main() {
+                    vColor = instanceColor;
+                    
+                    // 关键修复：直接使用内置矩阵
+                    vec4 worldPosition = modelMatrix * vec4(instancePosition, 1.0);
+                    gl_Position = projectionMatrix * viewMatrix * worldPosition;
+                    
+                    // 应用几何体顶点位置（重要！）
+                    gl_Position += projectionMatrix * viewMatrix * vec4(position, 0.0);
+                }
+            `,
+            fragmentShader: `
+                varying vec3 vColor;
+                void main() {
+                    gl_FragColor = vec4(vColor, 1.0);
+                }
+            `,
+        });
+
+        // 生成n个立方体位置
+        const gridSize = 100;
+        const spacing = 2;
+        const cubePositions = [];
+        // 自定义属性：颜色 + 偏移位置
+        const colors = new Float32Array(gridSize* gridSize*gridSize * 3);
+        const offsets = new Float32Array(gridSize*gridSize*gridSize * 3);
+        const cubeInstanced =  new THREE.InstancedMesh(cubeGeometry, cubeMaterial, gridSize * gridSize * gridSize);
+
+        // 监听按键切换模式
+        for (let x = 0; x < gridSize; x++) {
+            for (let y = 0; y < gridSize; y++) {
+                for (let z = 0; z < gridSize; z++) {
+                    if (x * y * z >= 1000000) break;
+                    // cubePositions.push([
+                    //     (x - gridSize / 2) * spacing,
+                    //     (y - gridSize / 2) * spacing,
+                    //     (z - gridSize / 2) * spacing
+                    // ]);
+                    const i = x*gridSize*gridSize + y*gridSize + z;
+                    colors[i * 3 + 0] = Math.random();
+                    colors[i * 3 + 1] = Math.random();
+                    colors[i * 3 + 2] = Math.random();
+                    // colors.push(...[Math.random(), Math.random(), Math.random()])
+                    // 随机偏移位置
+                    offsets[i * 3 + 0] = (x - gridSize / 2) * spacing;
+                    offsets[i * 3 + 1] = (y - gridSize / 2) * spacing;
+                    offsets[i * 3 + 2] = (z - gridSize / 2) * spacing;
+                    // offsets.push(...[(x - gridSize / 2) * spacing, (y - gridSize / 2) * spacing, (z - gridSize / 2) * spacing])
+                }
+            }
+        }
+        const time = Date.now();
+
+        cubeGeometry.setAttribute('instancePosition', new THREE.InstancedBufferAttribute(offsets, 3));
+        cubeGeometry.setAttribute('instanceColor', new THREE.InstancedBufferAttribute(colors, 3));
+        // 相机位置
+        camera.position.z = 20;
+        scene.add(cubeInstanced);
+        renderer.render(scene, camera);
+        console.log(Date.now() - time);
+        console.log(Date.now() - time1);
+        // 动画循环
+        function animate() {
+            requestAnimationFrame(animate);
+            stats.update(); // 更新帧率统计
+            controls.update(); // 更新轨道控制器
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // 窗口大小调整
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // 初始日志
+    </script>
+</body>
+</html>
