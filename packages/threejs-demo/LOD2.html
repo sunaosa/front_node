@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1000 Squares with LOD</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/libs/stats.min.js"></script>
+    <script>
+        // 初始化场景、相机和渲染器
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x111111);
+        
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(50, 50, 50);
+        
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+        
+        // 添加轨道控制器
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        
+        // 添加Stats性能监控
+        const stats = new Stats();
+        document.body.appendChild(stats.dom);
+        
+        // ========== LOD正方形实现 ==========
+        
+        // 1. 创建不同LOD级别的几何体
+        const lodGeometries = [
+            new THREE.BoxGeometry(1, 1, 1, 8, 8, 8),  // 高细节 (细分4x4)
+            new THREE.BoxGeometry(0.7, 0.7, 0.7),  // 中细节 (细分2x2)
+            new THREE.BoxGeometry(0.5, 0.5, 0.5)         // 低细节 (不分段)
+        ];
+        // const lodGeometries = [
+        //     new THREE.BoxGeometry(1, 1, 1, 8, 8, 8),  // 高细节 (细分4x4)
+        //     new THREE.BoxGeometry(1, 1, 1, 8, 8, 8),  // 中细节 (细分2x2)
+        //     new THREE.BoxGeometry(1, 1, 1, 8, 8, 8)         // 低细节 (不分段)
+        // ];
+        // 2. 创建共享材质
+        const material = new THREE.MeshBasicMaterial({ 
+            color: 0xffffff,
+            side: THREE.DoubleSide,
+            wireframe: false
+        });
+        
+        // 3. 创建1000个正方形并设置初始LOD
+        const squares = [];
+        const squareCount = 5000;
+        
+        for (let i = 0; i < squareCount; i++) {
+            // 随机位置 (-50到50范围)
+            const x = Math.random() * 100 - 50;
+            const y = Math.random() * 100 - 50;
+            const z = Math.random() * 100 - 50;
+            
+            // 随机旋转
+            const rx = Math.random() * Math.PI;
+            const ry = Math.random() * Math.PI;
+            const rz = Math.random() * Math.PI;
+            
+            // 创建正方形网格
+            const square = new THREE.Mesh(lodGeometries[0], material);
+            square.position.set(x, y, z);
+            square.rotation.set(rx, ry, rz);
+            
+            // 存储原始数据用于LOD计算
+            square.userData = {
+                originalPosition: new THREE.Vector3(x, y, z),
+                currentLOD: 0
+            };
+            
+            scene.add(square);
+            squares.push(square);
+        }
+        
+        // 4. LOD更新函数
+        const LOD_DISTANCES = [20, 40]; // LOD切换距离阈值
+        
+        function updateLODs() {
+            squares.forEach(square => {
+                const distance = camera.position.distanceTo(square.position);
+                
+                let newLOD;
+                if (distance < LOD_DISTANCES[0]) {
+                    newLOD = 0; // 高细节
+                } else if (distance < LOD_DISTANCES[1]) {
+                    newLOD = 1; // 中细节
+                } else {
+                    newLOD = 2; // 低细节
+                }
+                
+                // 如果LOD级别变化则更新几何体
+                if (newLOD !== square.userData.currentLOD) {
+                    if (newLOD === 2) {
+                        square.visible = false;
+                    } else {
+                        square.geometry = lodGeometries[newLOD];
+                        square.userData.currentLOD = newLOD;
+                        square.visible = true;
+                    }
+                    
+                }
+            });
+        }
+        
+        // ========== 动画循环 ==========
+        function animate() {
+            requestAnimationFrame(animate);
+            stats.begin();
+            
+            controls.update();
+            updateLODs();
+            renderer.render(scene, camera);
+            
+            stats.end();
+        }
+        
+        // 窗口大小调整
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        animate();
+    </script>
+</body>
+</html>

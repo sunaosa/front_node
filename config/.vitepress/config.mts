@@ -39,6 +39,7 @@ export default defineConfig({
           { text: 'Canvas', link: '/Canvas/canvas' },
           { text: 'SVG', link: '/SVG/svg' },
           { text: 'WebGL', link: '/WebGL/webgl' },
+          { text: 'Three.js优化', link: '/WebGL/ThreeOptimize' }
         ]
       },
       {
@@ -61,6 +62,8 @@ export default defineConfig({
     },
   },
   vite: {
+    envDir: '..\\docs',
+    envPrefix: ['VITE_', 'DB_'],
     css: {
       preprocessorOptions: {
         scss: {}

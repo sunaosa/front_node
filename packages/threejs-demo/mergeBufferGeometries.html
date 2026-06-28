@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js 性能对比：合并几何体 vs 独立渲染</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #stats {
+            position: absolute;
+            top: 0px;
+            left: 0;
+        }
+
+        #select {
+            position: absolute;
+            top: 0px;
+            left: 100px
+        }
+
+        #button {
+            position: absolute;
+            top: 0px;
+            left: 250px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- stats.js 帧率面板 -->
+    <div id="stats"></div>
+    <select id="select" value="separate">
+        <option value="merge-instanced">merge-instanced</option>
+        <option value="separate">separate</option>
+        <option value="merge">merge</option>
+    </select>
+    <button id="button" click="handleClick">矩阵变化</button>
+
+    <!-- Three.js 库 -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/utils/BufferGeometryUtils.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.min.js"></script>
+    <!-- stats.js 库 -->
+    <script src="https://cdn.jsdelivr.net/npm/stats.js@0.17.0/build/stats.min.js"></script>
+
+    <script>
+        const time1 = Date.now();
+
+        // 初始化场景、相机、渲染器
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.01, 1000000000000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // 初始化 stats.js
+        const stats = new Stats();
+        stats.showPanel(0); // 0: FPS, 1: MS, 2: MB
+        document.getElementById('stats').appendChild(stats.dom);
+
+        // 添加轨道控制器
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+
+        // 基础立方体几何体和材质
+        const cubeSize = 0.1;
+        const cubeGeometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
+        const cubeMaterial = new THREE.MeshBasicMaterial({
+            color: '#FF0000',
+            wireframe: true
+        });
+        const cubeInstancedMaterial = new THREE.MeshBasicMaterial({
+
+        });
+        // 生成n个立方体位置
+        const gridSize = 100;
+        const spacing = 0.1;
+        const cubePositions = [];
+        const cubeInstanced = new THREE.InstancedMesh(cubeGeometry, cubeInstancedMaterial, gridSize * gridSize * gridSize);
+        for (let x = 0; x < gridSize; x++) {
+            for (let y = 0; y < gridSize; y++) {
+                for (let z = 0; z < gridSize; z++) {
+                    if (x * y * z >= 1000000) break;
+                    cubePositions.push([
+                        (x - gridSize / 2) * spacing,
+                        (y - gridSize / 2) * spacing,
+                        (z - gridSize / 2) * spacing
+                    ]);
+                }
+            }
+        }
+
+        // 单个创建方案
+        function createSeparateCubes() {
+            const time = Date.now();
+            const group = new THREE.Group();
+            const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+            cubePositions.forEach(pos => {
+                const cubeItem = cube.clone();
+                cubeItem.position.set(pos[0], pos[1], pos[2]);
+                group.add(cubeItem);
+            });
+            scene.add(group);
+            renderer.render(scene, camera);
+            console.log(Date.now() - time);
+            return group;
+        }
+
+        // 使用mergeBufferGeometries方案
+        function createMergedCube() {
+            const time = Date.now();
+            const geometries = cubePositions.map(pos => {
+                const geom = cubeGeometry.clone();
+                geom.translate(pos[0], pos[1], pos[2]);
+                return geom;
+            });
+            console.log('几何体数量:', geometries.length);
+            console.log('第一个几何体顶点:', geometries[0]?.attributes?.position?.count);
+
+            const mergedGeometry = THREE.BufferGeometryUtils.mergeBufferGeometries(geometries);
+
+            console.log('合并后顶点:', mergedGeometry?.attributes?.position?.count);
+            console.log('mergedGeometry:', mergedGeometry);
+            console.log('cubeMaterial:', cubeMaterial);
+            const mergedMesh = new THREE.Mesh(mergedGeometry, cubeMaterial);
+            scene.add(mergedMesh);
+            renderer.render(scene, camera);
+            console.log(Date.now() - time);
+            return mergedMesh;
+        }
+        // 使用InstancedMesh创建多个实例
+        function createInstancedCube() {
+            const time = Date.now();
+            const cube = new THREE.Matrix4();
+            const color = new THREE.Color();
+
+            cubePositions.forEach((pos, index) => {
+                cube.setPosition(pos[0], pos[1], pos[2]);
+                color.r = Math.random();
+                color.g = Math.random();
+                color.b = Math.random();
+                cubeInstanced.setColorAt(index, color);
+                cubeInstanced.setMatrixAt(index, cube);
+            });
+            cubeInstanced.instanceColor.needsUpdate = true;
+            scene.add(cubeInstanced);
+            renderer.render(scene, camera);
+            console.log(Date.now() - time);
+            console.log(Date.now() - time1);
+            return cubeInstanced;
+        }
+
+        let currentMode = 'merge-instanced'; // 初始显示默认模式
+        let currentScene = createInstancedCube();
+
+        // 切换渲染模式
+        function toggleMode() {
+            scene.remove(currentScene);
+            if (currentScene.geometry) currentScene.geometry.dispose();
+
+            if (currentMode === 'separate') {
+                currentScene = createSeparateCubes();
+                console.log('切换到独立渲染模式');
+            } else if (currentMode === 'merge') {
+                currentScene = createMergedCube();
+                console.log('切换到合并几何体模式');
+            } else {
+                currentScene = createInstancedCube();
+                console.log('切换到instanced模式');
+            }
+        }
+
+        // 监听按键切换模式
+        const select = document.querySelector('#select');
+        select.addEventListener('change', (e) => {
+            currentMode = e.target.value;
+            toggleMode();
+        });
+
+        // 相机位置
+        camera.position.z = 20;
+
+        // 动画循环
+        function animate() {
+            requestAnimationFrame(animate);
+            stats.update(); // 更新帧率统计
+            controls.update(); // 更新轨道控制器
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // 窗口大小调整
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // 初始日志
+        console.log('current mode:', currentMode);
+    </script>
+</body>
+
+</html>

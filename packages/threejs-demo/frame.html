@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js 逐帧渲染</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #stats {
+            position: absolute;
+            top: 0px;
+            left: 0;
+        }
+
+        #select {
+            position: absolute;
+            top: 0px;
+            left: 100px
+        }
+
+        #button {
+            position: absolute;
+            top: 0px;
+            left: 250px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- stats.js 帧率面板 -->
+    <div id="stats"></div>
+
+    <!-- Three.js 库 -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/utils/BufferGeometryUtils.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.min.js"></script>
+    <!-- stats.js 库 -->
+    <script src="https://cdn.jsdelivr.net/npm/stats.js@0.17.0/build/stats.min.js"></script>
+
+    <script>
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 50;
+        // 初始化 stats.js
+        const stats = new Stats();
+        stats.showPanel(0); // 0: FPS, 1: MS, 2: MB
+        document.getElementById('stats').appendChild(stats.dom);
+
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+        const geometry = new THREE.BoxGeometry(1, 1, 1);
+        const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        let cubes = [];
+        let totalCubes = 10000;
+        let cubesPerFrame = 100;
+        function createCubes() {
+            for (let i = 0; i < cubesPerFrame; i++) {
+                const cube = new THREE.Mesh(geometry, material);
+
+                // 随机设置正方体的位置
+                cube.position.set(Math.random() * 100 - 50, Math.random() * 100 - 50, Math.random() * 100 - 50);
+                scene.add(cube);
+                cubes.push(cube);
+            }
+        }
+
+        let currentFrame = 0;
+        function animate() {
+            requestAnimationFrame(animate);
+            stats.update(); // 更新帧率统计
+
+            if (currentFrame < totalCubes / cubesPerFrame) {
+                createCubes();
+                currentFrame++;
+            }
+            renderer.render(scene, camera);
+        }
+        animate();
+
+
+    </script>
+</body>
+
+</html>

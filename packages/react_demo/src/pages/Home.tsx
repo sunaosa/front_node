@@ -1,6 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
-import reactLogo from '../assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useState, useCallback } from 'react'
 import '../App.css'
 
 // 简单的防抖辅助函数
