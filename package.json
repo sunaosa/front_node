@@ -3,9 +3,10 @@
     "concurrently": "^9.1.2",
     "vitepress": "2.0.0-alpha.12"
   },
+  "private": true,
   "scripts": {
-    "docs:dev": "concurrently \"pnpm -F react_demo dev\" \"pnpm -F threejs-demo dev\" \"vitepress dev config --mode dev\" ",
-    "docs:build": "vitepress build config --mode production && pnpm -F react_demo build && pnpm -F threejs-demo build",
+    "docs:dev": "concurrently \"vitepress dev config\" \"lerna run dev --parallel\"",
+    "docs:build": "vitepress build config --mode production && lerna run build",
     "docs:preview": "vitepress preview config",
     "deploy-push": "npm run docs:build && gh-pages -d config/.vitepress/dist"
   },
@@ -16,6 +17,7 @@
     "ant-design-vue": "^4.2.6",
     "antd": "^6.3.1",
     "gh-pages": "^6.3.0",
+    "lerna": "^10.0.0",
     "react-router-dom": "^7.13.1",
     "sass": "^1.93.2",
     "three": "^0.185.0"

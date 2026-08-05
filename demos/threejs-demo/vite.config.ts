@@ -8,7 +8,7 @@ export default defineConfig({
     open: '/mergeBufferGeometries.html'
   },
   build: {
-    outDir: '../../config/.vitepress/dist/threejs-demo',
+    outDir: '../../config/.vitepress/dist/demos/threejs-demo',
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'mergeBufferGeometries.html'),

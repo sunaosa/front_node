@@ -6,7 +6,7 @@ export default defineConfig({
   base: './', // 关键配置：改为相对路径，使其可以在任何子目录下部署/预览
   plugins: [react()],
   build: {
-    outDir: '../../config/.vitepress/dist/unpkg'
+    outDir: '../../config/.vitepress/dist/demos/react_demo', // 输出目录，确保与 VitePress 的输出目录一致
   },
   server: {
     port: 3000, // 可选：指定开发服务器端口
