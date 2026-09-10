@@ -17,6 +17,7 @@ export default defineConfig({
       { text: 'CSS Node', link: '/css/Animation/Animation' },
       {  text: '绘图', link: '/Canvas/canvas' },
       { text: '框架', link: '/React/react' },
+      { text: '其他', link: '/Openclaw/openclaw_sop' },
     ],
 
     sidebar: [
@@ -47,6 +48,12 @@ export default defineConfig({
         items: [
           { text: 'React', link: '/React/react' },
           { text: 'React Demo', link: '/React/react_demo' },
+        ]
+      },
+      {
+        text: '其他',
+        items: [
+          { text: 'Openclaw 安装流程', link: '/Openclaw/openclaw_sop' },
         ]
       }
     ],
