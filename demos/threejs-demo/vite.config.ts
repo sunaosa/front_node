@@ -5,7 +5,6 @@ export default defineConfig({
   root: '.',
   server: {
     port: 3001,
-    open: '/mergeBufferGeometries.html'
   },
   build: {
     outDir: '../../config/.vitepress/dist/demos/threejs-demo',

@@ -1,0 +1,39 @@
+/* 首页视觉效果自定义 */
+
+:root {
+  /* 站点主题色：靛蓝 */
+  --vp-c-brand-1: #545bf5;
+  --vp-c-brand-2: #4453e8;
+  --vp-c-brand-3: #3644d6;
+
+  /* Hero 标题渐变文字 */
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: linear-gradient(
+    120deg,
+    #47b9ff 10%,
+    #7c6bff 45%,
+    #ff58a8 90%
+  );
+}
+
+.dark {
+  --vp-c-brand-1: #7a82ff;
+  --vp-c-brand-2: #6d75f8;
+  --vp-c-brand-3: #6068ea;
+}
+
+/* Feature 卡片悬浮效果 */
+.VPFeature {
+  border-radius: 12px;
+  transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.VPFeature:hover {
+  border-color: var(--vp-c-brand-2);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(60, 80, 220, 0.12);
+}
+
+.dark .VPFeature:hover {
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
+}

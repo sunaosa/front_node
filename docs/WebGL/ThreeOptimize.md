@@ -13,9 +13,9 @@
 
 3. **实质**
 
-![Image](https://internal-api-drive-stream.feishu.cn/space/api/box/stream/download/authcode/?code=OWZlMzE1MzA4Njg5ZGZjOWYzNjU3OWFiNjk5ZmY5ZmZfODI1ZmQyMzkxNjZkNGE5NmM3MjJiN2U2YWE2ZGJmNjlfSUQ6NzQ5MzQ3MjcxMjk3ODEzNzExNl8xNzgyNjM1ODA5OjE3ODI3MjIyMDlfVjM)
+![几何体合并效果](./assets/pc1.PNG)
 
-![Image](https://internal-api-drive-stream.feishu.cn/space/api/box/stream/download/authcode/?code=ODkxMmEyNTcxY2EzZDg1YWIyZmRmY2Q3N2MxNjViZjdfNTMyNDFmNTdmYjAzYjk2MjFhNTdjZmEyNjRhNDMzNmNfSUQ6NzQ5MzQ3Mjk0MTk0NTI5MDc1Nl8xNzgyNjM1ODA5OjE3ODI3MjIyMDlfVjM)
+![几何体合并性能对比](./assets/pc2.PNG)
 
 4. **代码对比**：
 
@@ -57,7 +57,7 @@ for (let i = 0; i < instanceCount; i++) {
 
 4. **实质**
 
-![Image](https://internal-api-drive-stream.feishu.cn/space/api/box/stream/download/authcode/?code=Nzc0MDk0MjJkYTExNGU1OTdhODg1NDlmOGFkOTEyZGVfN2QzOWJjYmFlN2U1MzFmNzVkZWQ5Mzk1YzEwMTY2ODdfSUQ6NzQ5MzcyNDgxODg4NzAwMDA2NV8xNzgyNjM1ODA5OjE3ODI3MjIyMDlfVjM)
+![实例化渲染效果](./assets/pc3.PNG)
 
 5. **扩展特性**：
 
@@ -172,7 +172,7 @@ scene.add(lod);
 
 1. **原理：**不渲染视锥体之外的物体
 
-![Image](https://internal-api-drive-stream.feishu.cn/space/api/box/stream/download/authcode/?code=MjExYjc5NjUyM2Y3MjUwMTMxMDYxYzFiNmNkODFmYWFfNDZmMDI4NjljNTU1OWZlNGYyMDFmZTM5NWZmY2VkODBfSUQ6NzQ5MzgyNDg3MjAzMDYwMTIxOF8xNzgyNjM1ODA5OjE3ODI3MjIyMDlfVjM)
+![视锥体剔除原理](./assets/pc4.png)
 
 2. **目的： **提高渲染性能，减少不必要的绘制。
 
@@ -222,7 +222,7 @@ scene.add(lod);
 
     截至条件： 最大深度限制、最小包围盒尺寸限制、当前节点内的物体数量已足够少）
 
-![Image](https://internal-api-drive-stream.feishu.cn/space/api/box/stream/download/authcode/?code=ZTdjNDRhZjBjZDIyYTk0Njc3YWUzZGVjMTI3ZjcyZDJfNDJjYzFiMTU5NjRhZGJjY2FlYTI3YjVjNWM3ZGNjZTJfSUQ6NzQ5NDA5MTczNjc1Njk5NDA1MF8xNzgyNjM1ODA5OjE3ODI3MjIyMDlfVjM)
+![八叉树空间加速](./assets/pc5.png)
 
     
 

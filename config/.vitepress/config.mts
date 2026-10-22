@@ -13,11 +13,13 @@ export default defineConfig({
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
-      { text: 'Home', link: '/' },
+      { text: '首页', link: '/' },
       { text: 'CSS Node', link: '/css/Animation/Animation' },
       {  text: '绘图', link: '/Canvas/canvas' },
       { text: '框架', link: '/React/react' },
       { text: '其他', link: '/Openclaw/openclaw_sop' },
+      { text: '架构', link: '/Architecture/monorepo' },
+      { text: '优化', link: '/Optimization/Worker/worker' }
     ],
 
     sidebar: [
@@ -40,7 +42,6 @@ export default defineConfig({
           { text: 'Canvas', link: '/Canvas/canvas' },
           { text: 'SVG', link: '/SVG/svg' },
           { text: 'WebGL', link: '/WebGL/webgl' },
-          { text: 'Three.js优化', link: '/WebGL/ThreeOptimize' }
         ]
       },
       {
@@ -48,6 +49,20 @@ export default defineConfig({
         items: [
           { text: 'React', link: '/React/react' },
           { text: 'React Demo', link: '/React/react_demo' },
+        ]
+      },
+      
+      {
+        text: '架构',
+        items: [
+          { text: 'Monorepo', link: '/Architecture/monorepo' },
+        ]
+      },
+      {
+        text: '优化',
+        items: [
+          { text: 'Worker', link: '/Optimization/Worker/worker' },
+          { text: 'Three.js优化', link: '/WebGL/ThreeOptimize' }
         ]
       },
       {

@@ -11,6 +11,9 @@ import '@vitepress-demo-preview/component/dist/style.css';
 import Antd from 'ant-design-vue';
 import 'ant-design-vue/dist/reset.css';
 
+// 站点自定义样式
+import './custom.css';
+
 export default {
   ...Theme,
   // @ts-ignore
